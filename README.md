@@ -7,5 +7,8 @@ Web-interface for implementation of robot control.
 4. git remote add bot https://github.com/Gelendwvwvwvein/LogBot.git
 5. git add .
 6. git checkout -b <Name of the branch>
-7. git push bot <Name of the branch>
-8. Пул реквест через интерфейс гитхаба: указывайте изменения через свою ветку, необходимые для внесения в main
+do some code..
+7. git add .
+8. git commit -m "name of the commit"
+9. git push bot <Name of the branch>
+10. Пул реквест через интерфейс гитхаба: указывайте изменения через свою ветку, необходимые для внесения в main
