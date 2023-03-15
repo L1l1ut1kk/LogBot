@@ -6,12 +6,11 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Repository\UserRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use App\Controller\User\RegistrationUserController;
-use Symfony\Component\PasswordHasher\PasswordHasherInterface;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
 use App\Entity\Stations\Station;
-use ApiPlatform\Metadata\Post;
+use App\Entity\Requests\Request;
+use App\Entity\Robots\Robot;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 
 #[ApiResource]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -21,11 +20,19 @@ class User
     public const ROLE_SUPERUSER = 1;
     public const ROLE_USER = 2;
 
+    public function __construct()
+    {
+        $this->stationBossId = new ArrayCollection();
+        $this->robotBoss = new ArrayCollection();
+        $this->destinations = new ArrayCollection();
+        $this->sender = new ArrayCollection();
+
+    }
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "user")]
-    private ?int $id = null;
+    private int $id;
 
     #[ORM\Column(type: Types::TEXT, nullable: false)]
     public string $name;
@@ -37,34 +44,76 @@ class User
     public ?string $patronymic = null;
 
     #[ORM\Column(length: 15, nullable: false)]
-    private ?string $login;
+    private string $login;
 
     #[ORM\Column(nullable: false)]
     private string $password;
 
-    #[ORM\Column(type: 'array')]
-    private array $roles;
+    #[ORM\Column(type: 'integer')]
+    public int $roles;
 
-    #[ORM\Column(nullable: true)]
-    #[ORM\OneToMany(targetEntity: User::class, mappedBy: "user")]
-    private ?int $bossId = null;
+    #[ORM\OneToMany(targetEntity: Station::class, mappedBy: "stationsBoss")]
+    private $stationBossId;
 
-    #[ORM\ManyToOne(targetEntity: Station::class, inversedBy: "user")]
-    private $stations;
-
-    public function getStation(): ?Station
+    public function getStationBossId(): Collection
     {
-        return $this->stations;
+        return $this->stationBossId;
     }
 
-    public function setStation(?Station $station): self
+    public function setStationBossId(?Station $station): self
     {
-        $this->stations = $station;
+        $this->stationBossId = $station;
 
         return $this;
     }
 
-    public function getId(): ?int
+    #[ORM\OneToMany(targetEntity: Robot::class, mappedBy: "robotBossId")]
+    private $robotBoss;
+
+    public function getRobotBoss(): Collection
+    {
+        return $this->robotBoss;
+    }
+
+    public function setRobotBoss(?Robot $robot): self
+    {
+        $this->robotBoss = $robot;
+
+        return $this;
+    }
+
+    #[ORM\OneToMany(targetEntity: Request::class, mappedBy: "users_dest")]
+    private $destinations;
+
+    public function getDest(): Collection
+    {
+        return $this->destinations;
+    }
+
+    public function setDest(?Request $request): self
+    {
+        $this->destinations = $request;
+
+        return $this;
+    }
+
+    #[ORM\OneToMany(targetEntity: Request::class, mappedBy: "users_sender")]
+    private $sender;
+
+    public function getSender(): Collection
+    {
+        return $this->sender;
+    }
+
+    public function setSender(?Request $request): self
+    {
+        $this->sender = $request;
+
+        return $this;
+    }
+
+
+    public function getId(): int
     {
         return $this->id;
     }
@@ -93,20 +142,8 @@ class User
         return $this;
     }
 
-    public function getBossId(): ?int
-    {
-        return $this->bossId;
-    }
 
-    public function setBossId(?int $bossId): self
-    {
-        $this->bossId = $bossId;
-
-        return $this;
-    }
-
-
-    public function getRoles(): array
+    public function getRoles(): int
     {
         return $this->roles;
     }
