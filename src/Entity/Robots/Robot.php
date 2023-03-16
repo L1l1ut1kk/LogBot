@@ -4,10 +4,21 @@ namespace App\Entity\Robots;
 use ApiPlatform\Metadata\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use phpDocumentor\Reflection\Types\Boolean;
+use App\Entity\Requests\Request;
+use App\Entity\User\User;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 
 #[ApiResource] 
 #[ORM\Entity]
 class Robot{
+
+    public function __construct()
+    {
+        $this->robot = new ArrayCollection();
+    }
+
+    
     public const ROBOT_STATUS_ON_CONFIRMATION = 0;
     public const ROBOT_STATUS_CONFIRMED = 1;
     public const ROBOT_STATUS_IN_PROCESS = 2;
@@ -18,15 +29,11 @@ class Robot{
      #[ORM\GeneratedValue (strategy: 'AUTO')]
      private int $id;
 
-    #[ORM\Column(type: "integer")]
-    private int $boss_id;
-
     #[ORM\Column(type: "text")]
     private string $location;
 
     #[ORM\Column(type:"string", length: 255)]
     private string $charge;
-
 
     #[ORM\Column(type: "integer")]
     private int $status;
@@ -34,24 +41,30 @@ class Robot{
     #[ORM\Column(type: "integer")]
     private int $en_dis;
 
+    #[ORM\OneToMany(targetEntity: Request::class, mappedBy: "robot_id")]
+    private $robot;
 
-
-
-    /**
-     * @return int
-     */
-    public function getBossId(): int
+    public function getRobot(): Collection
     {
-        return $this->boss_id;
+        return $this->robot;
     }
 
-    /**
-     * @param int $boss_id
-     */
-    public function setBossId(int $boss_id): void
+    public function setRobot(?Request $request): self
     {
-        $this->boss_id = $boss_id;
+        $this->robot = $request;
+
+        return $this;
     }
+
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "robotBoss")]
+    private $robotBossId;
+
+    public function getRobotId(): ?User
+    {
+        return $this->robotBossId;
+    }
+
+
 
     public function getId(): ?int{
         return $this->id;
