@@ -3,6 +3,9 @@
 namespace App\Entity\User;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use App\Controller\User\RegistrationController;
 use App\Repository\UserRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -11,10 +14,22 @@ use App\Entity\Requests\Request;
 use App\Entity\Robots\Robot;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
-#[ApiResource]
+#[ApiResource(
+    operations: [
+        new Post(
+            uriTemplate: '/user/registration',
+            controller: RegistrationController::class,
+            deserialize: false,
+            name: 'Registration'
+        ),
+        new GetCollection()
+    ]
+)]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-class User
+class User implements  UserInterface, PasswordAuthenticatedUserInterface
 {
     public const ROLE_ADMIN = 0;
     public const ROLE_SUPERUSER = 1;
@@ -49,8 +64,8 @@ class User
     #[ORM\Column(nullable: false)]
     private string $password;
 
-    #[ORM\Column(type: 'integer')]
-    public int $roles;
+    #[ORM\Column(type: 'array')]
+    public array $roles;
 
     #[ORM\OneToMany(targetEntity: Station::class, mappedBy: "stationsBoss")]
     private $stationBossId;
@@ -143,7 +158,7 @@ class User
     }
 
 
-    public function getRoles(): int
+    public function getRoles(): array
     {
         return $this->roles;
     }
